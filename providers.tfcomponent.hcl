@@ -47,7 +47,7 @@ provider "helm" "this" {
     kubernetes = {
       host                   = component.kube0.cluster_endpoint
       cluster_ca_certificate = base64decode(component.kube0.cluster_ca_data)
-      token                  = component.kube0.eks_cluster_auth
+      token                  = component.eks_auth.token
     }
   }
 }
@@ -56,7 +56,7 @@ provider "kubernetes" "this" {
   config {
     host                   = component.kube0.cluster_endpoint
     cluster_ca_certificate = base64decode(component.kube0.cluster_ca_data)
-    token                  = component.kube0.eks_cluster_auth
+    token                  = component.eks_auth.token
   }
 }
 

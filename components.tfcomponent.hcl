@@ -19,6 +19,18 @@ component "kube0" {
   }
 }
 
+component "eks_auth" {
+  source = "./modules/eks_auth"
+
+  inputs = {
+    cluster_name = component.kube0.cluster_name
+  }
+
+  providers = {
+    aws = provider.aws.this
+  }
+}
+
 component "kube1" {
   source = "./modules/kube1"
 
