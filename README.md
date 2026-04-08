@@ -1,35 +1,79 @@
 # aws-vault-ldap-k8s-k8s
 
-Terraform Cloud Stacks scaffold for the AWS networking and Kubernetes platform slice of the `aws-vault-ldap-k8s` demo.
+Terraform Stacks repository for the shared AWS and Kubernetes foundation layer of the LDAP demo. This is the upstream stack for the split-repo layout and owns only `kube0` and `kube1`.
 
-This repository is intended to own the shared VPC, EKS cluster, ingress/platform prerequisites, and other Kubernetes-adjacent infrastructure that the rest of the demo depends on. It should remain the platform foundation repo for the split-stack design.
+## Scope
 
-## Stack purpose
+- VPC, public/private subnets, NAT, and the shared internal security group
+- EKS cluster creation, managed node group configuration, and cluster metadata outputs
+- base Kubernetes prerequisites needed before downstream stacks run:
+  - ingress-nginx with static public EIPs
+  - the `vault-license` Kubernetes secret
+  - the `vault-auth` service account and token review RBAC
+- published stack outputs consumed by the AD, Vault, and app stacks
 
-- provision the shared AWS networking and EKS platform
-- establish common Kubernetes prerequisites consumed by sibling stacks
-- publish platform outputs through linked stacks for AD, Vault, and app repos
+## Out of scope
 
-## Upstream linked-stack contract
+- Active Directory / LDAP infrastructure
+- Vault cluster runtime logic beyond the shared license secret and auth service account
+- application workloads or any downstream stack implementation
 
-This scaffold assumes no required upstream linked stack. Deployment inputs should come directly from Terraform Cloud Stacks deployment values and varsets such as `region`, `customer_name`, `user_email`, `instance_type`, and AWS credentials.
+## Components
 
-## Downstream linked-stack contract
+- `modules/kube0` owns the AWS network, EKS cluster, shared internal security group, and foundation outputs.
+- `modules/kube1` owns the Kubernetes bootstrap resources that should exist before the Vault and app stacks deploy.
 
-Planned outputs for downstream stacks:
+## Deployment defaults
 
-- VPC, subnet, and shared security group identifiers for `aws-vault-ldap-k8s-ad`
-- cluster name, endpoint, and CA data for `aws-vault-ldap-k8s-vault`
-- Kubernetes namespace, ingress, and app-facing platform metadata for `aws-vault-ldap-k8s-app`
-- any shared naming/prefix values needed across all sibling stacks
+This repo assumes the following HCP Terraform defaults for the `development` deployment:
 
-## Terraform Cloud Stacks
+- organization: `andybaran`
+- project display name: `ldap stack`
+- project slug: `ldap-stack`
+- region: `us-east-2`
+- customer name: `fidelity`
+- user email: `andy.baran@hashicorp.com`
+- `eks_node_instance_type`: `c5.xlarge`
+- `eks_node_ami_release_version`: `1.34.2-20260128`
+- shared AWS creds varset: `varset-oUu39eyQUoDbmxE1`
+- Vault license varset: `varset-fMrcJCnqUd6q4D9C`
 
-This repo is scaffolded around Terraform Stacks root files:
+The split repos intentionally do **not** default `destroy = true`.
 
-- `components.tfcomponent.hcl`
-- `providers.tfcomponent.hcl`
-- `variables.tfcomponent.hcl`
-- `deployments.tfdeploy.hcl`
+## Downstream output contract
 
-The HCL files are placeholders only. Later todos should add the actual platform components, provider pins, and linked-stack output wiring.
+Published outputs in `deployments.tfdeploy.hcl`:
+
+| Output | Description |
+| --- | --- |
+| `region` | AWS region for the shared platform deployment |
+| `vpc_id` | Shared VPC ID |
+| `public_subnet_id` | First public subnet ID |
+| `private_subnet_id` | First private subnet ID |
+| `shared_internal_sg_id` | Shared internal security group ID |
+| `resources_prefix` | Prefix used across shared resources |
+| `cluster_name` | Actual EKS cluster name |
+| `cluster_id` | EKS cluster ID |
+| `cluster_endpoint` | EKS API server endpoint |
+| `cluster_ca_data` | Base64-encoded EKS cluster CA data |
+| `kube_namespace` | Shared Kubernetes namespace from `kube1` |
+| `demo_id` | Demo identifier derived by `kube0` |
+
+A separate stack output, `cluster_kubeconfig_command`, keeps the human-friendly kubeconfig command without overloading `cluster_name`.
+
+If you need to reference the stack address in docs or downstream repos, assume:
+
+```
+app.terraform.io/andybaran/ldap-stack/aws-vault-ldap-k8s-k8s
+```
+
+## Local validation
+
+Run the repo formatting and validation commands from the repository root:
+
+```bash
+terraform fmt -recursive
+terraform stacks fmt
+terraform stacks init
+terraform stacks validate
+```

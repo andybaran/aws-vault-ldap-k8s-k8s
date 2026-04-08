@@ -6,18 +6,28 @@ applyTo: "*.tf,*.hcl,*.md"
 
 ## Goal
 
-Own the shared AWS and Kubernetes platform layer of the demo. The end-to-end system still uses Terraform Cloud Stacks to demonstrate Vault rotating AD credentials for an app on EKS, and this repo should provide the network and cluster foundation for the other stacks.
+Own the shared AWS and Kubernetes platform layer of the LDAP demo. This repo is the upstream Terraform Stacks repository for sibling stacks and owns only `kube0` and `kube1`.
 
 ## Scope
 
-- VPC, subnets, security groups, and EKS cluster infrastructure
-- shared Kubernetes prerequisites such as namespaces, ingress, and platform identities
-- stack outputs consumed by the AD, Vault, and app repos
+- stack root files at the repository root
+- `modules/kube0` for VPC, subnets, shared security group, and EKS cluster resources
+- `modules/kube1` for ingress-nginx, the Vault license secret, and shared Kubernetes auth primitives
+- published outputs consumed by downstream stacks
+
+## Non-scope
+
+- Vault cluster runtime modules
+- Active Directory / LDAP infrastructure
+- application workloads or downstream stack logic
 
 ## Guardrails
 
-- Keep using Terraform Stacks root files; do not replace the stack layout with plain Terraform.
-- Keep this repo focused on platform concerns. Do not move Vault runtime logic, AD domain logic, or app-specific workload code here.
-- Treat outputs consumed by sibling stacks as a stable contract and document changes in the README.
-- Prefer pinned provider/module versions and straightforward demo-friendly infrastructure choices.
-- When contracts change, reflect them in both HCL output descriptions and repo documentation.
+- Keep this repository in Terraform Stacks form; do not replace the root with plain Terraform.
+- Preserve the shared AWS creds varset `varset-oUu39eyQUoDbmxE1` in deployments.
+- Preserve the Vault license varset flow for `kube1` via `varset-fMrcJCnqUd6q4D9C`.
+- Use repo-specific names like `eks_node_instance_type` instead of the monolith's generic `instance_type`.
+- Keep `cluster_name` as the actual EKS cluster name and expose the kubeconfig helper separately as `cluster_kubeconfig_command`.
+- Treat the published outputs in `deployments.tfdeploy.hcl` as a stable downstream contract and update the README when that contract changes.
+- Do not add downstream stack wiring or application logic here.
+- Validate changes with `terraform fmt -recursive`, `terraform stacks fmt`, `terraform stacks init`, and `terraform stacks validate`.
