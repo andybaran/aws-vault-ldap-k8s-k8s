@@ -41,9 +41,9 @@ output "cluster_name" {
 }
 
 output "cluster_id" {
-  description = "EKS cluster ID."
+  description = "Stable EKS cluster identifier for linked stacks."
   type        = string
-  value       = component.kube0.cluster_id
+  value       = component.kube0.cluster_name
 }
 
 output "cluster_endpoint" {
