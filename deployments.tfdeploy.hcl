@@ -24,61 +24,49 @@ deployment "development" {
 }
 
 publish_output "region" {
-  type  = string
   value = deployment.development.region
 }
 
 publish_output "vpc_id" {
-  type  = string
   value = deployment.development.vpc_id
 }
 
 publish_output "public_subnet_id" {
-  type  = string
   value = deployment.development.public_subnet_id
 }
 
 publish_output "private_subnet_id" {
-  type  = string
   value = deployment.development.private_subnet_id
 }
 
 publish_output "shared_internal_sg_id" {
-  type  = string
   value = deployment.development.shared_internal_sg_id
 }
 
 publish_output "resources_prefix" {
-  type  = string
   value = deployment.development.resources_prefix
 }
 
 publish_output "cluster_name" {
-  type  = string
   value = deployment.development.cluster_name
 }
 
 publish_output "cluster_id" {
-  type  = string
   value = deployment.development.cluster_id
 }
 
 publish_output "cluster_endpoint" {
-  type  = string
   value = deployment.development.cluster_endpoint
 }
 
 publish_output "cluster_ca_data" {
-  type  = string
   value = deployment.development.cluster_ca_data
 }
 
 publish_output "kube_namespace" {
-  type  = string
   value = deployment.development.kube_namespace
 }
 
 publish_output "demo_id" {
-  type  = string
   value = deployment.development.demo_id
 }
